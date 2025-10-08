@@ -1,0 +1,18 @@
+PROJECT-ABSENSI/
+├── app.py                    # Main Flask application
+├── register.py              # User registration logic
+├── register_web.py          # Web registration interface
+├── init_db.py               # Database initialization
+├── database.db              # SQLite database
+├── templates/               # HTML templates
+│   ├── index.html          # Dashboard
+│   ├── login.html          # Login page
+│   ├── register.html       # Registration page
+│   ├── profil.html         # User profile
+│   ├── absensi.html        # Attendance page
+│   ├── absen_area.html     # Location management
+│   └── set_coordinat.html  # Admin coordinate settings
+├── uploads/                 # Photo uploads
+├── faces/                   # Face recognition data
+└── structure               # Project documentation
+

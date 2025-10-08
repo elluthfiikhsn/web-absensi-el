@@ -1,0 +1,2512 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Koordinat - Sistem Absensi</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+            }
+        }
+
+        /* SweetAlert2 Custom Dark Blue Theme */
+        .swal2-popup {
+            border-radius: 20px !important;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+            color: #fff !important;
+        }
+
+        .swal2-title {
+            color: #fff !important;
+            font-size: 24px !important;
+            font-weight: 700 !important;
+        }
+
+        .swal2-html-container {
+            color: #e0e7ff !important;
+        }
+
+        .swal2-confirm {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+            border: none !important;
+            padding: 12px 40px !important;
+            border-radius: 10px !important;
+            font-weight: 600 !important;
+            font-size: 16px !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .swal2-confirm:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 25px rgba(17, 153, 142, 0.4) !important;
+        }
+
+        .swal2-cancel {
+            background: rgba(108, 117, 125, 0.8) !important;
+            border: none !important;
+            padding: 12px 40px !important;
+            border-radius: 10px !important;
+            font-weight: 600 !important;
+            font-size: 16px !important;
+        }
+
+        .swal2-icon.swal2-success {
+            border-color: #11998e !important;
+        }
+
+        .swal2-success-ring {
+            border: 0.25em solid rgba(17, 153, 142, 0.3) !important;
+        }
+
+        .swal2-success-line-tip,
+        .swal2-success-line-long {
+            background-color: #38ef7d !important;
+        }
+
+        .swal2-icon.swal2-error {
+            border-color: #f5576c !important;
+        }
+
+        .swal2-error-line {
+            background-color: #f5576c !important;
+        }
+
+        .swal2-icon.swal2-warning {
+            border-color: #ffc107 !important;
+            color: #ffc107 !important;
+        }
+
+        .swal2-icon.swal2-question {
+            border-color: #667eea !important;
+            color: #667eea !important;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: none;
+            z-index: 9000 !important;
+            position: relative;
+            animation: slideInDown 0.6s ease-out;
+        }
+
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            animation: slideInUp 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .row:nth-child(2) .card {
+            animation-delay: 0.1s;
+        }
+
+        .row:nth-child(3) .card {
+            animation-delay: 0.2s;
+        }
+
+        .row:nth-child(4) .card {
+            animation-delay: 0.3s;
+        }
+
+        .row:nth-child(5) .card {
+            animation-delay: 0.4s;
+        }
+
+        .row:nth-child(6) .card {
+            animation-delay: 0.5s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        .header-card .card-body {
+            position: relative;
+            z-index: 1;
+        }
+
+        .current-location {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .form-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .btn-custom {
+            border-radius: 15px;
+            padding: 12px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border: none;
+        }
+
+        .btn-light {
+            background: rgba(255, 255, 255, 0.9);
+            color: #2a5298;
+            border: none;
+        }
+
+        .btn-light:hover {
+            background: rgba(255, 255, 255, 1);
+            color: #1e3c72;
+        }
+
+        .table-responsive {
+            border-radius: 20px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .table {
+            margin-bottom: 0;
+            color: white;
+        }
+
+        .table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-weight: 600;
+            padding: 15px;
+        }
+
+        .table td {
+            vertical-align: middle;
+            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+        }
+
+        .table tbody tr {
+            animation: fadeIn 0.5s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .table tbody tr:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .table tbody tr:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        .table tbody tr:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .table tbody tr:nth-child(4) {
+            animation-delay: 0.25s;
+        }
+
+        .table tbody tr:nth-child(5) {
+            animation-delay: 0.3s;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 0.875rem;
+            border-radius: 10px;
+        }
+
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            color: white;
+            animation: slideInUp 0.3s ease-out;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .modal-header.bg-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        }
+
+        .modal-header.bg-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+        }
+
+        .modal-body {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .modal-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0 0 20px 20px;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(30, 60, 114, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 8888;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .loading-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            animation: slideInUp 0.4s ease-out;
+        }
+
+        .card-header {
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px 20px 0 0 !important;
+            color: white;
+            font-weight: 600;
+        }
+
+        .badge {
+            border-radius: 15px;
+            padding: 8px 15px;
+            font-size: 0.85rem;
+        }
+
+        .alert {
+            border-radius: 15px;
+            border: none;
+            backdrop-filter: blur(10px);
+            animation: slideInDown 0.4s ease-out;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, rgba(17, 153, 142, 0.2) 0%, rgba(56, 239, 125, 0.2) 100%);
+            border: 1px solid rgba(17, 153, 142, 0.3);
+            color: #11998e;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.2) 0%, rgba(245, 87, 108, 0.2) 100%);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #dc3545;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            color: #667eea;
+        }
+
+        .dropdown-menu {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            z-index: 9999 !important;
+            animation: slideInDown 0.2s ease-out;
+        }
+
+        .dropdown-item {
+            color: #333;
+            border-radius: 10px;
+            margin: 5px;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+            margin: 0 5px;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: white !important;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .navbar-nav .nav-link.active {
+            color: white !important;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        #map {
+            height: 500px;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        .leaflet-container {
+            border-radius: 20px;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: rgba(42, 82, 152, 0.95);
+            backdrop-filter: blur(10px);
+            color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .leaflet-popup-tip {
+            background: rgba(42, 82, 152, 0.95);
+        }
+
+        .leaflet-popup-content {
+            color: white;
+        }
+
+        .leaflet-popup h6 {
+            color: #38ef7d;
+            margin-bottom: 5px;
+        }
+
+        .map-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideInRight 0.6s ease-out 0.5s both;
+        }
+
+        .map-legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            min-width: 200px;
+            animation: slideInLeft 0.6s ease-out 0.5s both;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .legend-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: inline-block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .coordinate-counter {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 8px 15px;
+            animation: slideInRight 0.6s ease-out 0.5s both;
+        }
+
+        .custom-marker {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .custom-marker.inactive {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        .current-location-marker {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .table-responsive {
+            display: block;
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            min-width: 300px;
+            max-width: 400px;
+            animation: slideInRight 0.4s ease-out;
+        }
+
+        @keyframes slideOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+        }
+
+        .toast-notification.hiding {
+            animation: slideOutRight 0.4s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            .table-responsive {
+                border: none;
+            }
+
+            .action-buttons {
+                white-space: nowrap;
+            }
+
+            .action-buttons .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.875rem;
+            }
+
+            .toast-notification {
+                right: 10px;
+                left: 10px;
+                min-width: auto;
+            }
+        }
+
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-content {
+            text-align: center;
+        }
+
+        .loader-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        .loader-text {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            animation: pulse-text 1.5s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse-text {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #ffffff;
+        }
+
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .table {
+            color: white;
+        }
+
+        .table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
+        .table td {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .btn-custom {
+            border-radius: 15px;
+            padding: 12px 25px;
+            font-weight: 600;
+        }
+
+        .badge {
+            border-radius: 15px;
+            padding: 8px 15px;
+        }
+
+        /* Card Pengaturan Koordinat - Warna Header */
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px 20px 0 0 !important;
+            color: white !important;
+            font-weight: 600;
+        }
+
+        /* Current Location Card - Kembalikan warna hijau */
+        .current-location {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .current-location h5,
+        .current-location p,
+        .current-location strong {
+            color: white !important;
+        }
+
+        /* Form Labels - Pastikan putih */
+        .form-label {
+            color: rgba(255, 255, 255, 0.95) !important;
+            font-weight: 500;
+        }
+
+        /* Form Control - Input fields */
+        .form-control,
+        .form-select {
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6) !important;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            background: rgba(255, 255, 255, 0.15) !important;
+            color: white !important;
+        }
+
+        /* Select dropdown options */
+        .form-select option {
+            background: #2a5298;
+            color: white;
+        }
+
+        /* Table Header - Gradient Purple */
+        .table thead th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            border: none;
+            font-weight: 600;
+            padding: 15px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        /* Table Body - Teks PUTIH */
+        .table tbody td {
+            vertical-align: middle;
+            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            color: white !important;
+            /* ✅ PERBAIKAN: Teks putih */
+            text-align: center;
+        }
+
+        /* Table row hover effect */
+        .table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* Badge styling - pastikan terbaca */
+        .badge {
+            border-radius: 15px;
+            padding: 8px 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge.bg-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+            color: white !important;
+        }
+
+        .badge.bg-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+            color: white !important;
+        }
+
+        /* Coordinate Counter Badge */
+        .coordinate-counter {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            border: none;
+            border-radius: 15px;
+            padding: 8px 15px;
+            color: white !important;
+            font-weight: 600;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .action-buttons .btn {
+            transition: all 0.3s ease;
+        }
+
+        .action-buttons .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Button Colors */
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+            border: none;
+            color: white !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            border: none;
+            color: white !important;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+            border: none;
+            color: white !important;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important;
+            border: none;
+            color: white !important;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+            border: none;
+            color: white !important;
+        }
+
+        /* Header Card - Gradient Purple dengan shimmer */
+        .header-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        .header-card .card-body {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-card h2,
+        .header-card p {
+            color: white !important;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        .empty-state i {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+
+        .empty-state h5 {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .empty-state p {
+            color: rgba(255, 255, 255, 0.6) !important;
+        }
+
+        /* Map Controls & Legend */
+        .map-controls,
+        .map-legend {
+            background: rgba(42, 82, 152, 0.9) !important;
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white !important;
+        }
+
+        .map-legend h6 {
+            color: white !important;
+        }
+
+        .map-legend .legend-item span {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .map-legend small {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+
+        .loading-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white !important;
+        }
+
+        .loading-content h5 {
+            color: white !important;
+        }
+
+        .loading-content p {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        /* Modal */
+        .modal-content {
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%) !important;
+            color: white !important;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-body {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .modal-body .form-label {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        .modal-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Alert Messages */
+        .alert {
+            border-radius: 15px;
+            border: none;
+            backdrop-filter: blur(10px);
+            color: white !important;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, rgba(17, 153, 142, 0.3) 0%, rgba(56, 239, 125, 0.3) 100%) !important;
+            border: 1px solid rgba(17, 153, 142, 0.5) !important;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.3) 0%, rgba(245, 87, 108, 0.3) 100%) !important;
+            border: 1px solid rgba(220, 53, 69, 0.5) !important;
+        }
+
+        .navbar-brand,
+        .nav-link {
+            color: white !important;
+        }
+
+        /* Buttons Custom */
+        .btn-custom {
+            border-radius: 15px;
+            padding: 12px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-light {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #2a5298 !important;
+            border: none;
+        }
+
+        .btn-light:hover {
+            background: rgba(255, 255, 255, 1) !important;
+            color: #1e3c72 !important;
+        }
+
+        .btn-outline-light {
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            color: white !important;
+            background: transparent;
+        }
+
+        .btn-outline-light:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border-color: white;
+            color: white !important;
+        }
+
+        /* Table Responsive - Mobile scroll hint */
+        .table-responsive {
+            border-radius: 20px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Ensure all text in cards is white */
+        .card * {
+            color: white;
+        }
+
+        /* Except for specific overrides like input placeholders */
+        .card .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Strong tags in tables */
+        .table strong {
+            color: white !important;
+            font-weight: 600;
+        }
+
+        /* Links in table (if any) */
+        .table a {
+            color: #38ef7d !important;
+            text-decoration: none;
+        }
+
+        .table a:hover {
+            color: #11998e !important;
+            text-decoration: underline;
+        }
+
+        /* Page Loader */
+        .page-loader {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+        }
+
+        .loader-text {
+            color: white !important;
+        }
+
+        /* Animations */
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-wrap: wrap;
+            }
+
+            .action-buttons .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.875rem;
+            }
+
+            .table {
+                font-size: 0.875rem;
+            }
+
+            .card-body {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <div class="loader-text">
+                <i class="fas fa-map-marker-alt me-2"></i>Memuat Koordinat...
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner-border text-light mb-3" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h5>Memproses...</h5>
+            <p class="text-white-50 mb-0">Mohon tunggu sebentar</p>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fade-in">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-user-clock me-2"></i>Absensi
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if session.get('username') == 'admin' %}
+                    <!-- Admin Navigation -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'users_dashboard' %}active{% endif %}"
+                            href="{{ url_for('users_dashboard') }}">
+                            <i class="fas fa-users me-1"></i>Manage User
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'register' %}active{% endif %}"
+                            href="{{ url_for('register') }}">
+                            <i class="fas fa-user-plus me-1"></i>Tambah User
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'set_coordinat' %}active{% endif %}"
+                            href="{{ url_for('set_coordinat') }}">
+                            <i class="fas fa-map-marker-alt me-1"></i>Koordinat
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'profil' %}active{% endif %}"
+                            href="{{ url_for('profil') }}">
+                            <i class="fas fa-user me-1"></i>Profil
+                        </a>
+                    </li>
+                    {% else %}
+                    <!-- User Navigation -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}"
+                            href="{{ url_for('index') }}">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'absensi' %}active{% endif %}"
+                            href="{{ url_for('absensi') }}">
+                            <i class="fas fa-clock me-1"></i>Absensi
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'profil' %}active{% endif %}"
+                            href="{{ url_for('profil') }}">
+                            <i class="fas fa-user me-1"></i>Profil
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    <!-- Dropdown for both admin and user -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-1"></i>
+                            {{ session.full_name or session.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('profil') }}">
+                                    <i class="fas fa-user me-2"></i>Profil
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('logout') }}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <!-- Header Card -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card header-card">
+                    <div class="card-body text-center py-4">
+                        <h2 class="mb-2">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            Pengaturan Koordinat
+                        </h2>
+                        <p class="mb-0 opacity-75">Kelola lokasi yang diizinkan untuk absensi</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Location Card -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card current-location">
+                    <div class="card-body">
+                        <h5 class="mb-3">
+                            <i class="fas fa-crosshairs me-2"></i>
+                            Lokasi Anda Saat Ini
+                        </h5>
+                        <div id="current-location-info">
+                            <div class="d-flex align-items-center">
+                                <div class="spinner-border spinner-border-sm me-3" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <span>Mendapatkan lokasi...</span>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 mt-3">
+                            <button class="btn btn-light btn-custom" onclick="useCurrentLocation()">
+                                <i class="fas fa-plus me-2"></i>Gunakan Lokasi Ini
+                            </button>
+                            <button class="btn btn-outline-light btn-custom" onclick="showCurrentLocationOnMap()">
+                                <i class="fas fa-eye me-2"></i>Lihat di Peta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Coordinate Form -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-plus-circle me-2"></i>
+                            Tambah Koordinat Baru
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="addCoordinateForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="name" class="form-label">
+                                        <i class="fas fa-tag me-1"></i>Nama Lokasi
+                                    </label>
+                                    <input type="text" class="form-control" id="name" name="name"
+                                        placeholder="Contoh: Kantor Pusat Jakarta" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="radius" class="form-label">
+                                        <i class="fas fa-circle me-1"></i>Radius (meter)
+                                    </label>
+                                    <input type="number" class="form-control" id="radius" name="radius" value="100"
+                                        min="10" max="1000" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="latitude" class="form-label">
+                                        <i class="fas fa-compass me-1"></i>Latitude
+                                    </label>
+                                    <input type="number" class="form-control" id="latitude" name="latitude" step="any"
+                                        placeholder="-6.123456" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="longitude" class="form-label">
+                                        <i class="fas fa-compass me-1"></i>Longitude
+                                    </label>
+                                    <input type="number" class="form-control" id="longitude" name="longitude" step="any"
+                                        placeholder="106.123456" required>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <button type="button" class="btn btn-outline-light btn-custom me-2"
+                                    onclick="clearForm()">
+                                    <i class="fas fa-eraser me-1"></i>Bersihkan
+                                </button>
+                                <button type="submit" class="btn btn-success btn-custom">
+                                    <i class="fas fa-plus me-1"></i>Tambah Koordinat
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Card -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-map me-2"></i>
+                            Peta Koordinat
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-light" onclick="refreshMap()">
+                                <i class="fas fa-refresh me-1"></i>Refresh
+                            </button>
+                            <button class="btn btn-sm btn-outline-light" onclick="fitAllMarkers()">
+                                <i class="fas fa-expand-arrows-alt me-1"></i>Fit All
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-3" style="position: relative;">
+                        <div id="map"></div>
+
+                        <div class="map-controls">
+                            <div class="d-flex flex-column gap-2">
+                                <button class="btn btn-sm btn-light" onclick="addMarkerMode()" id="addMarkerBtn">
+                                    <i class="fas fa-plus me-1"></i>Add Point
+                                </button>
+                                <button class="btn btn-sm btn-outline-light" onclick="clearSelection()">
+                                    <i class="fas fa-times me-1"></i>Clear
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="map-legend">
+                            <h6 class="mb-3"><i class="fas fa-info-circle me-2"></i>Legend</h6>
+                            <div class="legend-item">
+                                <div class="legend-icon"
+                                    style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);"></div>
+                                <span>Active Location</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-icon"
+                                    style="background: linear-gradient(135deg, #6c757d 0%, #495057 100%);"></div>
+                                <span>Inactive Location</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-icon current-location-marker"></div>
+                                <span>Current Location</span>
+                            </div>
+                            <div class="mt-3 text-sm">
+                                <small><i class="fas fa-mouse-pointer me-1"></i>Click map to add new point</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coordinates List -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            Daftar Koordinat
+                        </h5>
+                        <span class="badge coordinate-counter" id="coordinate-counter">0 lokasi</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th style="min-width: 150px;">Nama Lokasi</th>
+                                        <th style="min-width: 120px;">Latitude</th>
+                                        <th style="min-width: 120px;">Longitude</th>
+                                        <th style="min-width: 100px;">Radius (m)</th>
+                                        <th style="min-width: 100px;">Status</th>
+                                        <th style="min-width: 200px;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="coordinates-table-body">
+                                    <tr id="empty-row">
+                                        <td colspan="6" class="text-center py-4">
+                                            <div class="empty-state">
+                                                <i class="fas fa-map-marker-alt fa-4x mb-3"></i>
+                                                <h5>Belum ada koordinat tersimpan</h5>
+                                                <p class="text-white-50">Tambahkan koordinat pertama untuk memulai</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="text-center py-2 d-md-none"
+                            style="background: rgba(255,255,255,0.05); font-size: 0.85rem;">
+                            <i class="fas fa-hand-point-right me-1"></i>
+                            <span class="text-white-50">Geser ke kanan untuk melihat lebih banyak</span>
+                            <i class="fas fa-hand-point-left ms-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-edit me-2"></i>Edit Koordinat
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="edit-id">
+                        <div class="mb-3">
+                            <label for="edit-name" class="form-label">Nama Lokasi</label>
+                            <input type="text" class="form-control" id="edit-name" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-latitude" class="form-label">Latitude</label>
+                                <input type="number" class="form-control" id="edit-latitude" step="any" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-longitude" class="form-label">Longitude</label>
+                                <input type="number" class="form-control" id="edit-longitude" step="any" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-radius" class="form-label">Radius (meter)</label>
+                            <input type="number" class="form-control" id="edit-radius" min="10" max="1000" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    let map;
+    let currentLocationMarker;
+    let coordinateMarkers = [];
+    let addMarkerModeActive = false;
+    let currentLocation = null;
+
+    // ✅ TAMBAHAN BARU: Load koordinat dari backend
+    let coordinates = {{ coordinates | tojson }};
+
+    console.log('📦 Initial coordinates from backend:', coordinates);
+    console.log('📊 Total coordinates:', coordinates.length);
+
+    // ✅ TAMBAHAN BARU: Function untuk load data dari API (fallback)
+    function loadCoordinatesFromAPI() {
+        console.log('🔄 Loading coordinates from API...');
+
+        fetch('/api/coordinates/list')
+            .then(response => {
+                console.log('📡 API Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('📦 API Data received:', data);
+
+                if (data.success && Array.isArray(data.coordinates)) {
+                    coordinates = data.coordinates;
+                    console.log(`✅ Loaded ${coordinates.length} coordinates from API`);
+
+                    // Update UI
+                    displayCoordinatesInTable();
+                    loadCoordinateMarkers();
+                    updateCoordinateCounter();
+                } else {
+                    console.error('❌ Invalid data format from API');
+                    showEmptyState();
+                }
+            })
+            .catch(error => {
+                console.error('💥 API Load error:', error);
+                showEmptyState();
+            });
+    }
+
+    function displayCoordinatesInTable() {
+        const tbody = document.getElementById('coordinates-table-body');
+        const emptyRow = document.getElementById('empty-row');
+
+        if (!tbody) {
+            console.error('❌ Table body not found!');
+            return;
+        }
+
+        console.log(`🔄 Displaying ${coordinates.length} coordinates in table...`);
+
+        if (coordinates.length === 0) {
+            if (emptyRow) emptyRow.style.display = '';
+            return;
+        }
+
+        // Hide empty row
+        if (emptyRow) emptyRow.style.display = 'none';
+
+        // Clear existing rows (except empty-row)
+        Array.from(tbody.children).forEach(row => {
+            if (row.id !== 'empty-row') {
+                row.remove();
+            }
+        });
+
+        // Add rows for each coordinate
+        coordinates.forEach((coord, index) => {
+            const row = document.createElement('tr');
+            row.style.animation = `fadeIn 0.5s ease-out ${index * 0.05}s both`;
+
+            row.innerHTML = `
+                <td>${escapeHtml(coord.name)}</td>
+                <td>${coord.latitude}</td>
+                <td>${coord.longitude}</td>
+                <td>${coord.radius}</td>
+                <td>
+                    <span class="badge ${coord.active ? 'bg-success' : 'bg-secondary'}">
+                        ${coord.active ? 'Aktif' : 'Nonaktif'}
+                    </span>
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn btn-sm btn-info" onclick="focusOnMap(${coord.id})" title="Lihat di Peta">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-primary" 
+                                onclick="editCoordinate(${coord.id}, '${escapeHtml(coord.name)}', ${coord.latitude}, ${coord.longitude}, ${coord.radius})"
+                                title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm ${coord.active ? 'btn-warning' : 'btn-success'}" 
+                                onclick="toggleStatus(${coord.id}, ${coord.active})"
+                                title="${coord.active ? 'Nonaktifkan' : 'Aktifkan'}">
+                            <i class="fas fa-${coord.active ? 'pause' : 'play'}"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" 
+                                onclick="confirmDelete(${coord.id}, '${escapeHtml(coord.name)}')"
+                                title="Hapus">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+
+            tbody.appendChild(row);
+        });
+
+        console.log(`✅ Displayed ${coordinates.length} rows in table`);
+    }
+
+    // ✅ TAMBAHAN BARU: Helper function untuk escape HTML
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return String(text).replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // ✅ TAMBAHAN BARU: Show empty state
+    function showEmptyState() {
+        const tbody = document.getElementById('coordinates-table-body');
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4">
+                        <div class="empty-state">
+                            <i class="fas fa-map-marker-alt fa-4x mb-3 opacity-50"></i>
+                            <h5>Belum ada koordinat tersimpan</h5>
+                            <p class="text-white-50">Tambahkan koordinat pertama untuk memulai</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    function initMap() {
+        map = L.map('map').setView([-2.5, 118], 5);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        map.on('click', onMapClick);
+        loadCoordinateMarkers();
+    }
+
+    function loadCoordinateMarkers() {
+        // Clear existing markers
+        coordinateMarkers.forEach(marker => {
+            map.removeLayer(marker);
+            if (marker.circle) {
+                map.removeLayer(marker.circle);
+            }
+        });
+        coordinateMarkers = [];
+
+        // Add markers for each coordinate
+        coordinates.forEach(coord => {
+            addCoordinateMarker(coord);
+        });
+
+        // Fit map to show all markers
+        if (coordinateMarkers.length > 0) {
+            fitAllMarkers();
+        }
+    }
+
+    function addCoordinateMarker(coord) {
+        const markerElement = document.createElement('div');
+        markerElement.className = `custom-marker ${coord.active ? '' : 'inactive'}`;
+        markerElement.innerHTML = '<i class="fas fa-map-marker-alt text-white"></i>';
+
+        const marker = L.marker([coord.latitude, coord.longitude], {
+            icon: L.divIcon({
+                html: markerElement.outerHTML,
+                className: 'custom-div-icon',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            })
+        }).addTo(map);
+
+        const circle = L.circle([coord.latitude, coord.longitude], {
+            color: coord.active ? '#11998e' : '#6c757d',
+            fillColor: coord.active ? '#38ef7d' : '#6c757d',
+            fillOpacity: 0.1,
+            radius: coord.radius
+        }).addTo(map);
+
+        const popupContent = `
+            <div style="min-width: 200px;">
+                <h6 style="color: #38ef7d; margin-bottom: 10px;">
+                    <i class="fas fa-map-marker-alt me-2"></i>${escapeHtml(coord.name)}
+                </h6>
+                <p style="margin-bottom: 5px;"><strong>Latitude:</strong> ${coord.latitude}</p>
+                <p style="margin-bottom: 5px;"><strong>Longitude:</strong> ${coord.longitude}</p>
+                <p style="margin-bottom: 10px;"><strong>Radius:</strong> ${coord.radius}m</p>
+                <p style="margin-bottom: 15px;">
+                    <span class="badge ${coord.active ? 'bg-success' : 'bg-secondary'}">
+                        ${coord.active ? 'Aktif' : 'Nonaktif'}
+                    </span>
+                </p>
+            </div>
+        `;
+
+        marker.bindPopup(popupContent);
+        marker.coordinateId = coord.id;
+        marker.circle = circle;
+        coordinateMarkers.push(marker);
+
+        return marker;
+    }
+
+    function onMapClick(e) {
+        if (addMarkerModeActive) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+
+            document.getElementById('latitude').value = lat.toFixed(6);
+            document.getElementById('longitude').value = lng.toFixed(6);
+            document.getElementById('name').focus();
+
+            addMarkerMode();
+
+            Swal.fire({
+                icon: 'info',
+                title: '<span style="color: #fff;">Koordinat Dipilih!</span>',
+                html: '<p style="color: #e0e7ff;">Koordinat berhasil dipilih dari peta. Silakan lengkapi form untuk menambahkan lokasi.</p>',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#2a5298',
+                timer: 2000,
+                timerProgressBar: true
+            });
+        }
+    }
+
+    function getCurrentLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showCurrentPosition, showLocationError, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 60000
+            });
+        } else {
+            document.getElementById('current-location-info').innerHTML =
+                '<div class="alert alert-danger mb-0">Browser tidak mendukung geolokasi</div>';
+        }
+    }
+
+    function showCurrentPosition(position) {
+        currentLocation = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy
+        };
+
+        document.getElementById('current-location-info').innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>Latitude:</strong> ${position.coords.latitude.toFixed(6)}</p>
+                    <p class="mb-0"><strong>Longitude:</strong> ${position.coords.longitude.toFixed(6)}</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>Akurasi:</strong> ±${Math.round(position.coords.accuracy)}m</p>
+                    <p class="mb-0"><strong>Status:</strong> <span class="badge bg-success">Terdeteksi</span></p>
+                </div>
+            </div>
+        `;
+
+        addCurrentLocationToMap();
+    }
+
+    function showLocationError(error) {
+        let errorMsg = '';
+        switch (error.code) {
+            case error.PERMISSION_DENIED:
+                errorMsg = "Akses lokasi ditolak oleh pengguna.";
+                break;
+            case error.POSITION_UNAVAILABLE:
+                errorMsg = "Informasi lokasi tidak tersedia.";
+                break;
+            case error.TIMEOUT:
+                errorMsg = "Timeout mendapatkan lokasi.";
+                break;
+            default:
+                errorMsg = "Error tidak diketahui.";
+                break;
+        }
+        document.getElementById('current-location-info').innerHTML =
+            `<div class="alert alert-danger mb-0">${errorMsg}</div>`;
+    }
+
+    function addCurrentLocationToMap() {
+        if (!currentLocation) return;
+
+        if (currentLocationMarker) {
+            map.removeLayer(currentLocationMarker);
+        }
+
+        const markerElement = document.createElement('div');
+        markerElement.className = 'current-location-marker';
+
+        currentLocationMarker = L.marker([currentLocation.latitude, currentLocation.longitude], {
+            icon: L.divIcon({
+                html: markerElement.outerHTML,
+                className: 'current-location-div-icon',
+                iconSize: [25, 25],
+                iconAnchor: [12.5, 12.5]
+            })
+        }).addTo(map);
+
+        currentLocationMarker.bindPopup(`
+            <div style="min-width: 200px;">
+                <h6 style="color: #667eea; margin-bottom: 10px;">
+                    <i class="fas fa-crosshairs me-2"></i>Lokasi Anda
+                </h6>
+                <p style="margin-bottom: 5px;"><strong>Latitude:</strong> ${currentLocation.latitude.toFixed(6)}</p>
+                <p style="margin-bottom: 5px;"><strong>Longitude:</strong> ${currentLocation.longitude.toFixed(6)}</p>
+                <p style="margin-bottom: 10px;"><strong>Akurasi:</strong> ±${Math.round(currentLocation.accuracy)}m</p>
+            </div>
+        `);
+    }
+
+    function showCurrentLocationOnMap() {
+        if (!currentLocation) {
+            Swal.fire({
+                icon: 'warning',
+                title: '<span style="color: #fff;">Lokasi Belum Terdeteksi</span>',
+                html: '<p style="color: #e0e7ff;">Mohon tunggu sebentar hingga lokasi Anda terdeteksi.</p>',
+                confirmButtonColor: '#2a5298'
+            });
+            return;
+        }
+
+        map.setView([currentLocation.latitude, currentLocation.longitude], 16);
+        if (currentLocationMarker) {
+            currentLocationMarker.openPopup();
+        }
+    }
+
+    function useCurrentLocation() {
+        if (!currentLocation) {
+            Swal.fire({
+                icon: 'warning',
+                title: '<span style="color: #fff;">Lokasi Belum Terdeteksi</span>',
+                html: '<p style="color: #e0e7ff;">Mohon tunggu sebentar hingga lokasi Anda terdeteksi.</p>',
+                confirmButtonColor: '#2a5298'
+            });
+            return;
+        }
+
+        document.getElementById('latitude').value = currentLocation.latitude.toFixed(6);
+        document.getElementById('longitude').value = currentLocation.longitude.toFixed(6);
+        document.getElementById('name').focus();
+
+        Swal.fire({
+            icon: 'success',
+            title: '<span style="color: #fff;">Berhasil!</span>',
+            html: '<p style="color: #e0e7ff;">Lokasi saat ini berhasil digunakan. Silakan isi nama lokasi.</p>',
+            confirmButtonColor: '#2a5298',
+            timer: 2000,
+            timerProgressBar: true
+        });
+    }
+
+    function clearForm() {
+        document.getElementById('name').value = '';
+        document.getElementById('latitude').value = '';
+        document.getElementById('longitude').value = '';
+        document.getElementById('radius').value = '100';
+    }
+
+    function addMarkerMode() {
+        addMarkerModeActive = !addMarkerModeActive;
+        const btn = document.getElementById('addMarkerBtn');
+
+        if (addMarkerModeActive) {
+            btn.className = 'btn btn-sm btn-warning';
+            btn.innerHTML = '<i class="fas fa-times me-1"></i>Cancel';
+            map.getContainer().style.cursor = 'crosshair';
+
+            Swal.fire({
+                icon: 'info',
+                title: '<span style="color: #fff;">Mode Pilih Koordinat</span>',
+                html: '<p style="color: #e0e7ff;">Klik pada peta untuk memilih koordinat lokasi.</p>',
+                confirmButtonColor: '#2a5298',
+                timer: 2000,
+                timerProgressBar: true
+            });
+        } else {
+            btn.className = 'btn btn-sm btn-light';
+            btn.innerHTML = '<i class="fas fa-plus me-1"></i>Add Point';
+            map.getContainer().style.cursor = '';
+        }
+    }
+
+    function clearSelection() {
+        clearForm();
+        if (addMarkerModeActive) {
+            addMarkerMode();
+        }
+    }
+
+    function focusOnMap(coordinateId) {
+        const coord = coordinates.find(c => c.id === coordinateId);
+        if (coord) {
+            map.setView([coord.latitude, coord.longitude], 16);
+
+            const marker = coordinateMarkers.find(m => m.coordinateId === coordinateId);
+            if (marker) {
+                setTimeout(() => marker.openPopup(), 500);
+            }
+        }
+    }
+
+    function fitAllMarkers() {
+        if (coordinateMarkers.length === 0) return;
+
+        const group = new L.featureGroup(coordinateMarkers);
+        if (currentLocationMarker) {
+            group.addLayer(currentLocationMarker);
+        }
+
+        map.fitBounds(group.getBounds().pad(0.1));
+    }
+
+    function refreshMap() {
+        loadCoordinateMarkers();
+        getCurrentLocation();
+
+        Swal.fire({
+            icon: 'success',
+            title: '<span style="color: #fff;">Peta Di-refresh!</span>',
+            html: '<p style="color: #e0e7ff;">Peta berhasil diperbarui.</p>',
+            confirmButtonColor: '#2a5298',
+            timer: 1500,
+            timerProgressBar: true
+        });
+    }
+
+    function editCoordinate(id, name, lat, lng, radius) {
+        document.getElementById('edit-id').value = id;
+        document.getElementById('edit-name').value = name;
+        document.getElementById('edit-latitude').value = lat;
+        document.getElementById('edit-longitude').value = lng;
+        document.getElementById('edit-radius').value = radius;
+
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    }
+
+    function toggleStatus(id, currentStatus) {
+        const coord = coordinates.find(c => c.id === id);
+        if (!coord) return;
+
+        const action = currentStatus ? 'nonaktifkan' : 'aktifkan';
+        const actionCap = currentStatus ? 'Nonaktifkan' : 'Aktifkan';
+
+        Swal.fire({
+            title: `<span style="color: #fff;">${actionCap} Koordinat?</span>`,
+            html: `<p style="color: #e0e7ff;">Yakin ingin ${action} koordinat<br><strong>"${escapeHtml(coord.name)}"</strong>?</p>`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: currentStatus ? '#ffc107' : '#11998e',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: `Ya, ${actionCap}!`,
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                showLoading();
+
+                const formData = new FormData();
+                formData.append('id', id);
+
+                fetch('/toggle_coordinate_status', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        hideLoading();
+
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '<span style="color: #fff;">Berhasil!</span>',
+                                html: `<p style="color: #e0e7ff;">${data.message}</p>`,
+                                confirmButtonColor: '#11998e',
+                                timer: 2000,
+                                timerProgressBar: true
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: '<span style="color: #fff;">Gagal!</span>',
+                                html: `<p style="color: #e0e7ff;">${data.message || 'Gagal mengubah status'}</p>`,
+                                confirmButtonColor: '#dc3545'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        hideLoading();
+                        Swal.fire({
+                            icon: 'error',
+                            title: '<span style="color: #fff;">Error!</span>',
+                            html: '<p style="color: #e0e7ff;">Gagal menghubungi server</p>',
+                            confirmButtonColor: '#dc3545'
+                        });
+                    });
+            }
+        });
+    }
+
+    function confirmDelete(id, name) {
+        Swal.fire({
+            title: '<span style="color: #fff;">Hapus Koordinat?</span>',
+            html: `<div style="color: #e0e7ff;">
+                <p>Apakah Anda yakin ingin menghapus koordinat:</p>
+                <p><strong>"${escapeHtml(name)}"</strong></p>
+                <div style="background: rgba(220,53,69,0.1); padding: 10px; border-radius: 10px; border-left: 3px solid #dc3545; margin-top: 15px;">
+                    <small style="color: #f87171;"><i class="fas fa-exclamation-triangle me-1"></i> Tindakan ini tidak dapat dibatalkan!</small>
+                </div>
+            </div>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-trash me-1"></i> Ya, Hapus!',
+            cancelButtonText: '<i class="fas fa-times me-1"></i> Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteCoordinateConfirmed(id, name);
+            }
+        });
+    }
+
+    function deleteCoordinateConfirmed(coordinateId, name) {
+        showLoading();
+
+        const formData = new FormData();
+        formData.append('id', coordinateId);
+
+        fetch('/delete_coordinate', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '<span style="color: #fff;">Berhasil Dihapus!</span>',
+                        html: `<p style="color: #e0e7ff;">Koordinat "${escapeHtml(name)}" berhasil dihapus!</p>`,
+                        confirmButtonColor: '#11998e',
+                        timer: 2000,
+                        timerProgressBar: true
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '<span style="color: #fff;">Gagal!</span>',
+                        html: `<p style="color: #e0e7ff;">${data.message || 'Gagal menghapus koordinat'}</p>`,
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                Swal.fire({
+                    icon: 'error',
+                    title: '<span style="color: #fff;">Error!</span>',
+                    html: '<p style="color: #e0e7ff;">Gagal menghubungi server</p>',
+                    confirmButtonColor: '#dc3545'
+                });
+            });
+    }
+
+    function updateCoordinateCounter() {
+        const counter = document.getElementById('coordinate-counter');
+        if (counter) {
+            counter.textContent = `${coordinates.length} lokasi`;
+        }
+    }
+
+    function validateEditForm() {
+        const name = document.getElementById('edit-name').value.trim();
+        const latitude = parseFloat(document.getElementById('edit-latitude').value);
+        const longitude = parseFloat(document.getElementById('edit-longitude').value);
+        const radius = parseInt(document.getElementById('edit-radius').value);
+
+        if (!name) {
+            Swal.fire({
+                icon: 'error',
+                title: '<span style="color: #fff;">Validasi Gagal</span>',
+                html: '<p style="color: #e0e7ff;">Nama lokasi tidak boleh kosong!</p>',
+                confirmButtonColor: '#2a5298'
+            });
+            return false;
+        }
+
+        if (isNaN(latitude) || latitude < -90 || latitude > 90) {
+            Swal.fire({
+                icon: 'error',
+                title: '<span style="color: #fff;">Validasi Gagal</span>',
+                html: '<p style="color: #e0e7ff;">Latitude harus antara -90 dan 90!</p>',
+                confirmButtonColor: '#2a5298'
+            });
+            return false;
+        }
+
+        if (isNaN(longitude) || longitude < -180 || longitude > 180) {
+            Swal.fire({
+                icon: 'error',
+                title: '<span style="color: #fff;">Validasi Gagal</span>',
+                html: '<p style="color: #e0e7ff;">Longitude harus antara -180 dan 180!</p>',
+                confirmButtonColor: '#2a5298'
+            });
+            return false;
+        }
+
+        if (isNaN(radius) || radius < 10 || radius > 1000) {
+            Swal.fire({
+                icon: 'error',
+                title: '<span style="color: #fff;">Validasi Gagal</span>',
+                html: '<p style="color: #e0e7ff;">Radius harus antara 10 dan 1000 meter!</p>',
+                confirmButtonColor: '#2a5298'
+            });
+            return false;
+        }
+
+        return true;
+    }
+
+    function validateCoordinateForm() {
+        const name = document.getElementById('name').value.trim();
+        const latitude = parseFloat(document.getElementById('latitude').value);
+        const longitude = parseFloat(document.getElementById('longitude').value);
+        const radius = parseInt(document.getElementById('radius').value);
+
+        if (!name) {
+            Swal.fire({
+                icon: 'error',
+                title: '<span style="color: #fff;">Validasi Gagal</span>',
+                html: '<p style="color: #e0e7ff;">Nama lokasi tidak boleh kosong!</p>',
+                confirmButtonColor: '#2a5298'
+            });
+            return false;
+        }
+
+        if (isNaN(latitude) || latitude < -90 || latitude > 90) {
+            Swal.fire({
+                icon: 'error',
+                title: '<span style="color: #fff;">Validasi Gagal</span>',
+                html: '<p style="color: #e0e7ff;">Latitude harus antara -90 dan 90!</p>',
+                confirmButtonColor: '#2a5298'
+            });
+            return false;
+        }
+
+        if (isNaN(longitude) || longitude < -180 || longitude > 180) {
+            Swal.fire({
+                icon: 'error',
+                title: '<span style="color: #fff;">Validasi Gagal</span>',
+                html: '<p style="color: #e0e7ff;">Longitude harus antara -180 dan 180!</p>',
+                confirmButtonColor: '#2a5298'
+            });
+            return false;
+        }
+
+        if (isNaN(radius) || radius < 10 || radius > 1000) {
+            Swal.fire({
+                icon: 'error',
+                title: '<span style="color: #fff;">Validasi Gagal</span>',
+                html: '<p style="color: #e0e7ff;">Radius harus antara 10 dan 1000 meter!</p>',
+                confirmButtonColor: '#2a5298'
+            });
+            return false;
+        }
+
+        return true;
+    }
+
+    function showLoading() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
+    // ✅ PERBAIKAN: Initialize on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('🚀 Page loaded, initializing...');
+        console.log('📦 Coordinates available:', coordinates.length);
+
+        // Initialize map
+        initMap();
+
+        // Get current location
+        getCurrentLocation();
+
+        // ✅ Display coordinates in table
+        if (coordinates.length > 0) {
+            console.log('✅ Displaying coordinates in table...');
+            displayCoordinatesInTable();
+            updateCoordinateCounter();
+        } else {
+            console.warn('⚠️ No coordinates from backend, trying API...');
+            // Fallback: Try loading from API
+            loadCoordinatesFromAPI();
+        }
+
+        // Handle add coordinate form submission
+        document.getElementById('addCoordinateForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            if (!validateCoordinateForm()) {
+                return;
+            }
+
+            showLoading();
+
+            const formData = new FormData(this);
+
+            fetch('/add_coordinate', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    hideLoading();
+
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '<span style="color: #fff;">Berhasil!</span>',
+                            html: `
+                                <div style="color: #e0e7ff; text-align: left; padding: 15px;">
+                                    <p style="margin-bottom: 15px;">Koordinat baru berhasil ditambahkan!</p>
+                                    <div style="background: rgba(17,153,142,0.1); padding: 15px; border-radius: 10px; border-left: 4px solid #11998e;">
+                                        <p style="margin: 5px 0;"><strong>Nama:</strong> ${formData.get('name')}</p>
+                                        <p style="margin: 5px 0;"><strong>Latitude:</strong> ${formData.get('latitude')}</p>
+                                        <p style="margin: 5px 0;"><strong>Longitude:</strong> ${formData.get('longitude')}</p>
+                                        <p style="margin: 5px 0;"><strong>Radius:</strong> ${formData.get('radius')}m</p>
+                                    </div>
+                                </div>
+                            `,
+                            confirmButtonText: '<i class="fas fa-check me-1"></i> OK',
+                            confirmButtonColor: '#11998e'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: '<span style="color: #fff;">Gagal!</span>',
+                            html: `<p style="color: #e0e7ff;">${data.message || 'Gagal menambahkan koordinat'}</p>`,
+                            confirmButtonColor: '#dc3545'
+                        });
+                    }
+                })
+                .catch(error => {
+                    hideLoading();
+                    Swal.fire({
+                        icon: 'error',
+                        title: '<span style="color: #fff;">Error!</span>',
+                        html: '<p style="color: #e0e7ff;">Gagal menghubungi server. Silakan coba lagi.</p>',
+                        confirmButtonColor: '#dc3545'
+                    });
+                    console.error('Add coordinate error:', error);
+                });
+        });
+
+        // Handle edit form submission
+        document.getElementById('editForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            if (!validateEditForm()) {
+                return;
+            }
+
+            showLoading();
+
+            const formData = new FormData();
+            formData.append('id', document.getElementById('edit-id').value);
+            formData.append('name', document.getElementById('edit-name').value);
+            formData.append('latitude', document.getElementById('edit-latitude').value);
+            formData.append('longitude', document.getElementById('edit-longitude').value);
+            formData.append('radius', document.getElementById('edit-radius').value);
+
+            fetch('/update_coordinate', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    hideLoading();
+                    bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '<span style="color: #fff;">Berhasil!</span>',
+                            html: '<p style="color: #e0e7ff;">Koordinat berhasil diperbarui!</p>',
+                            confirmButtonColor: '#11998e',
+                            timer: 2000,
+                            timerProgressBar: true
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: '<span style="color: #fff;">Gagal!</span>',
+                            html: `<p style="color: #e0e7ff;">${data.message || 'Gagal memperbarui koordinat'}</p>`,
+                            confirmButtonColor: '#dc3545'
+                        });
+                    }
+                })
+                .catch(error => {
+                    hideLoading();
+                    bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+                    Swal.fire({
+                        icon: 'error',
+                        title: '<span style="color: #fff;">Error!</span>',
+                        html: '<p style="color: #e0e7ff;">Gagal menghubungi server</p>',
+                        confirmButtonColor: '#dc3545'
+                    });
+                    console.error('Update error:', error);
+                });
+        });
+    });
+
+    // Hide page loader
+    window.addEventListener('load', function () {
+        const loader = document.getElementById('pageLoader');
+        if (loader) {
+            setTimeout(() => {
+                loader.classList.add('hidden');
+            }, 200);
+        }
+    });
+</script>
+</body>
+
+</html>
